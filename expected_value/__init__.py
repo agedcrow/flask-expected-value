@@ -13,11 +13,11 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
-    # from . import imarine
-    # app.register_blueprint(imarine.bp)
+    from . import imarine
+    app.register_blueprint(imarine.bp)
 
-    # from . import agnes4
-    # app.register_blueprint(agnes4.bp)
+    from . import agnes4
+    app.register_blueprint(agnes4.bp)
 
     @app.route('/')
     @login_required
