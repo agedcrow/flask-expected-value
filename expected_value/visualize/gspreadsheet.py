@@ -5,10 +5,8 @@ import os
 from flask import current_app
 
 
-path = current_app.instance_path
-TOKEN_FILE = os.path.normpath(os.path.join(path, 'token.json'))
-SSKEY_FILE = os.path.normpath(os.path.join(path, 'sskey.json'))
-
+TOKEN_FILE = os.path.join(current_app.instance_path, 'token.json')
+SSKEY_FILE = os.path.join(current_app.instance_path, 'sskey.json')
 
 def connect_gspread(SPREADSHEET_KEY: str) -> list:
 
@@ -26,7 +24,4 @@ def get_sskey():
 
 if __name__ == "__main__":
     print(get_sskey())
-    # project_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    # instance_path = os.path.join(project_path, 'instance')
-    # JSON_FILE = os.path.normpath(os.path.join(instance_path, 'token.json'))
-    # print(JSON_FILE)
+
