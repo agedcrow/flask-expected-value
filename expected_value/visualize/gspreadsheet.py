@@ -5,7 +5,7 @@ import os
 
 
 project_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-instance_path = os.path.join(project_path, 'instance')
+instance_path = os.path.join(project_path, 'workspace/instance')
 TOKEN_FILE = os.path.normpath(os.path.join(instance_path, 'token.json'))
 SSKEY_FILE = os.path.normpath(os.path.join(instance_path, 'sskey.json'))
 
