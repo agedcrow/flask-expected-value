@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 
-from expected_value.visualize.gspreadsheet import connect_gspread, get_sskey
+from .gspreadsheet import connect_gspread, get_sskey
 
 # PA大海物語4スペシャル RBA
 
