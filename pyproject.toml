@@ -1,0 +1,22 @@
+[build-system]
+requires = ['setuptools']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'expected-value'
+version = '2025.0.1'
+dependencies = [
+  'flask',
+  'gunicorn',
+  'Flask-WTF', 
+  'matplotlib', 
+  'pandas', 
+  'google-auth',
+  'gspread'
+]
+
+[tool.setuptools.package-dir]
+expected_value = 'expected_value'
+
+
+
