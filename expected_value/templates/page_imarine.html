@@ -4,17 +4,17 @@
   <div class="p-4 text-center">
     <h2 class="fs-5 mt-2 mb-4 text-secondary">{{ title }}</h2>
 
-    <p>Spec</p>
-    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_spec | safe }}</div>
+    <p>Specs</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_specs | safe }}</div>
 
-    <p>Border</p>
+    <p>Rate table</p>
     <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border | safe }}</div>
     
     <p>Result</p>
     <div class="mb-2 mx-auto" style="width:fit-content;">{{ tbl_result | safe }}</div>
     
     <div class="mb-4">
-      <img src="data:image/png;base64,{{ img_data }}" alt="Image", width="420"/>
+      <img src="data:image/png;base64,{{ plot_img }}" alt="Image", width="420"/>
     </div>
 
   </div>

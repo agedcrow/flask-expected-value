@@ -12,26 +12,33 @@ bp = Blueprint('agnes4', __name__, url_prefix='/agnes4')
 @login_required
 def agnes4():
 
-    from .visualize.agnes4 import spec, border
+    from .visualize.agnes4 import specs, specs_table, border_tables
+    from .visualize.gspreadsheet import arrays_from_sheet, result, plot_data, plot
 
     title = 'PA大海物語4スペシャル RBA'
-    df_spec = spec()
+    kw = specs()
+    tbl_specs = specs_table(**kw)
 
-    dfs_border, start_games = border()
-    borders = [] 
-    for sg, df_border in zip(start_games, dfs_border):
-        start_game = str(sg) + ' game'
-        tbl = df_border.to_html(classes='tbl-border')
-        borders.append((start_game, tbl))
+    games = 0, 33, 53, 90, 120, 160, 190
+    dfs = border_tables(*games, **kw)
 
+    tbl_borders = []
+    for game, df in zip(games, dfs):
+        cap = str(game) +  ' game'
+        tbl = df.to_html(classes='tbl-border')
+        tbl_borders.append((cap, tbl))
 
-    # df_result, games, balance = result()
-    # img_data = plot(games, balance)
+    KEY = 'agnes4'
+    starts, rounds, payouts, games = arrays_from_sheet(KEY)
+    tbl_result = result(starts, rounds, payouts, games, **kw)
+    print(tbl_result)
+    data = plot_data(starts, rounds, payouts, games)
+    plot_img = plot(*data)
 
     return render_template('page_agnes4.html', 
                                 title = title,
-                                tbl_spec = df_spec.to_html(classes='tbl-spec'),
-                                tbl_borders=borders,
-                                # tbl_result = df_result.to_html(classes='tbl-result', index=False),
-                                # img_data = img_data
+                                tbl_specs = tbl_specs.to_html(classes='tbl-specs'),
+                                tbl_borders = tbl_borders,
+                                tbl_result = tbl_result.to_html(classes='tbl-result', index=False),
+                                plot_img = plot_img
                             )

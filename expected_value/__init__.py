@@ -24,8 +24,8 @@ def create_app(test_config=None):
     def index():
         return render_template('index.html')
 
-    # @app.route('/hello')
-    # def hello():
-    #     return 'Hello, World!'
+    @app.route('/hello')
+    def hello():
+        return 'Hello, World!'
 
     return app

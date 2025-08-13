@@ -12,18 +12,24 @@ bp = Blueprint('imarine', __name__, url_prefix='/imarine')
 @login_required
 def imarine():
 
-    from .visualize.imarine import spec, border, result, plot
+    from .visualize.imarine import specs, specs_table, border_table
+    from .visualize.gspreadsheet import arrays_from_sheet, result, plot_data, plot
 
     title = 'PAスーパー海物語IN 沖縄5 SBA'
-    df_border= border()
-    df_spec = spec()
-    df_result, games, balance = result()
-    img_data = plot(games, balance)
+    kw = specs()
+    tbl_specs = specs_table(**kw)
+    tbl_border = border_table(**kw)
+
+    KEY = 'imarine'
+    starts, rounds, payouts, games = arrays_from_sheet(KEY)
+    tbl_result = result(starts, rounds, payouts, games, **kw)
+    data = plot_data(starts, rounds, payouts, games)
+    plot_img = plot(*data)
 
     return render_template('page_imarine.html', 
                                 title = title,
-                                tbl_spec = df_spec.to_html(classes='tbl-spec'),
-                                tbl_border = df_border.to_html(classes='tbl-border'),
-                                tbl_result = df_result.to_html(classes='tbl-result', index=False),
-                                img_data = img_data
+                                tbl_specs = tbl_specs.to_html(classes='tbl-specs'),
+                                tbl_border = tbl_border.to_html(classes='tbl-border'),
+                                tbl_result = tbl_result.to_html(classes='tbl-result', index=False),
+                                plot_img = plot_img
                             )

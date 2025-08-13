@@ -5,15 +5,27 @@ import base64
 import io
 import json
 import os
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.figure import Figure
 
-from .gspreadsheet import connect_gspread, get_sskey
 
 # PA大海物語4スペシャル RBA
 
-def border():
+# 実質TS
+def actual_ts(games=299, utime_games=379):
+    p = 1/99.9
+    # 残保留 6 - 4
+    x = -2  # 欠損2
+    ts = (1 - (1 - (1-p)**x)) * 1/p
+    p_ = 1 / ts
+    # 遊タイム
+    p_hit_before_utime = 1 - (1-p_)**games
+    p_reach_to_utime = 1 - p_hit_before_utime
+    p_hit_in_utime = 1 - (1-p_)**utime_games
+    p_reach_and_hit_in_utime = p_reach_to_utime * p_hit_in_utime
+    ts_actual = (1-p_reach_and_hit_in_utime) * 1/p_
+
+    return ts_actual
+
+def specs():
     p = 1/99.9
     q = 1/19.5
     prize = {'heso': 3, 'dentu': 2, 'attacker': 12, 'ta_1': 2, 'ta_2': 4}
@@ -29,57 +41,74 @@ def border():
     even2 = 1 - (1-q)**10 * (1-p)**15
     continuing = np.dot((agnes, odd, even1, even2), ratio)  # 継続率 0.5773
     expected_loop = 1 / (1 - continuing)  # 期待連荘数 2.3660
-    # print(continuing, expected_loop)
 
     expected_rounds = np.dot(round_, ratio)  # 期待ラウンド数 5.439
     payout = prize['attacker'] * count - count  # 表記出玉 99
     ty = expected_loop * expected_rounds * payout # 1274.25
-    # print(expected_rounds, payout, ty)
 
     # 実質TS
-    def expected_ts(games=299, utime_games=379):
-        p_hit_before_utime = 1 - (1-p)**games
-        p_reach_to_utime = 1 - p_hit_before_utime
-        p_hit_in_utime = 1 - (1-p)**utime_games
-        p_reach_and_hit_in_utime = p_reach_to_utime * p_hit_in_utime
-        ts = (1-p_reach_and_hit_in_utime) * 1/p
-        return ts
+    ts = actual_ts()
+    # ボーダー
+    actual_p = 1 / ts
+    border = 250 / (ty * actual_p)
 
-    ts = expected_ts()  # default value
-    p_ = 1 / ts
-    border = 250 / (ty * p_)
-    # print(ts, border)  # 95.0752221500156 18.65312045778898
+    d = {
+            'continuing': continuing,  # 継続率
+            'expected_loop': expected_loop,  # 期待連荘数
+            'expected_rounds': expected_rounds,  # 期待ラウンド数
+            'payout': payout,  # 1ラウンドの払い出し
+            'ty': ty,  # 特賞の（寄り玉）期待出玉
+            'ts': np.float64(ts),  # 実質の（特賞スタート）通常確率分母
+            'border': border  # ボーダー
+        }
 
-    # tables
-    start_games = [0, 30, 50, 80, 100, 130, 160, 190]
-    dfs = []
-    for ts in [expected_ts(games=(299-g)) for g in start_games]:
-        payouts = np.array([95, 96, 97, 98, 99, 100, 101])
-        starts = np.arange(15, 23)
-        out = ts * 250 / starts
-        arr_ty = expected_loop * expected_rounds * payouts
-        
-        data = [np.round(ty/out, 3) for ty in arr_ty]
-        df = pd.DataFrame(data, index=payouts, columns=starts)
-        dfs.append(df)
+    return d
 
-    return dfs, start_games
-
-
-def spec():
+def specs_table(**kwargs):
+    continuing = kwargs['continuing']
+    expected_loop = kwargs['expected_loop']
+    expected_rounds = kwargs['expected_rounds']
+    payout = kwargs['payout']
+    ty = kwargs['ty']
+    border = kwargs['border']
     data = [
-        [0.5773],
-        [2.366],
-        [5.439],
-        [99],
-        [1274.2],
+            [round(continuing, 3)],
+            [round(expected_loop, 2)],
+            [round(expected_rounds, 1)],
+            [round(payout, 1)],
+            [round(ty, 1)],
+            [round(border, 2)],
         ['ヘソ 3 電チュ 2 左上・右上 2 他 4'],
         ['12 attack x 9 count x 4 or 6 or 10R']
     ]
-    index = ['継続率', '期待連荘', '期待R', '出玉/R', 'TY', '賞球', 'カウント']
+    index = ['継続率', '期待連荘', '期待R', '出玉/R', 'TY', 'ボーダー', '賞球', 'カウント']
     return pd.DataFrame(data, index=index)
 
 
+def border_tables(*args: int, **kwargs: np.float64) -> pd.DataFrame:
+    payouts = np.array([95, 96, 97, 98, 99, 100, 101])
+    starts = np.arange(15, 23)
+    expected_loop = kwargs['expected_loop']
+    expected_rounds = kwargs['expected_rounds']
+    ts = kwargs['ts']
+
+    dfs = []
+    for ts in [actual_ts(games=(299-game)) for game in args]:
+        out = ts * 250 / starts
+        tys = expected_loop * expected_rounds * payouts
+        
+        data = [np.round(ty/out, 3) for ty in tys]
+        df = pd.DataFrame(data, index=payouts, columns=starts)
+        dfs.append(df)
+
+    return dfs
+
+
 if __name__ == '__main__':
-    dfs, start_games = border()
+    d = specs()
+    # print(d)
+    # df = specs_table(**d)
+    # print(df)
+    args = 0, 33, 53, 90, 120, 160, 190
+    dfs = border_tables(*args, **d)
     print(dfs[-1])

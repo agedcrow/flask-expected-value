@@ -15,6 +15,10 @@ dependencies = [
   'gspread'
 ]
 
+[project.optional-dependencies]
+test = ['pytest', 'pytest-cov']
+dev = ['flake8', 'mypy']
+
 [tool.setuptools.package-dir]
 expected_value = 'expected_value'
 

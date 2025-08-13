@@ -35,22 +35,22 @@ table {
   }
 }
 
-/* spec */
+/* specs */
 
-.tbl-spec th, .tbl-spec td {
+.tbl-specs th, .tbl-specs td {
   padding: 5px 10px 5px;
   border: 1px solid var(--gray-secondary);
 }
 
-.tbl-spec thead th {
+.tbl-specs thead th {
   display: none;
 }
 
-.tbl-spec td {
+.tbl-specs td {
 	text-align: center;
 }
 
-.tbl-spec th:first-child {
+.tbl-specs th:first-child {
   background: var(--gray-light);
 } 
 

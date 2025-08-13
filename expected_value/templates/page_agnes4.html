@@ -4,44 +4,21 @@
   <div class="p-4 text-center">
     <h2 class="fs-5 mt-2 mb-4 text-secondary">{{ title }}</h2>
 
-    <p>Spec</p>
-    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_spec | safe }}</div>
+    <p>Specs</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_specs | safe }}</div>
 
-    {% for start_game, tbl_border in tbl_borders %}
-      <p>{{ start_game }}</p>
+    <p>Rate tables</p>
+    {% for caption, tbl_border in tbl_borders %}
+      <div class="mb-1">{{ caption }}</div>
       <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border | safe }}</div>
     {% endfor %}
 
-    {# <p>{{ start_game0 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border0 | safe }}</div>
-    
-    <p>{{ start_game1 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border1 | safe }}</div>
-
-    <p>{{ start_game2 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border2 | safe }}</div>
-    
-    <p>{{ start_game3 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border3 | safe }}</div>
-
-    <p>{{ start_game4 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border4 | safe }}</div>
-    
-    <p>{{ start_game5 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border5 | safe }}</div>
-
-    <p>{{ start_game6 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border6 | safe }}</div>
-    
-    <p>{{ start_game7 }}</p>
-    <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border7 | safe }}</div> #}
-
-    {# <p>Result</p>
+    <p>Result</p>
     <div class="mb-2 mx-auto" style="width:fit-content;">{{ tbl_result | safe }}</div>
     
     <div class="mb-4">
-      <img src="data:image/png;base64,{{ img_data }}" alt="Image", width="420"/>
-    </div> #}
+      <img src="data:image/png;base64,{{ plot_img }}" alt="Image", width="420"/>
+    </div>
 
   </div>
 
