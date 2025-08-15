@@ -12,7 +12,8 @@ dependencies = [
   'matplotlib', 
   'pandas', 
   'google-auth',
-  'gspread'
+  'gspread',
+  'pydantic'
 ]
 
 [project.optional-dependencies]

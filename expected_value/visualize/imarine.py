@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from .models import Specs
+
 
 # PAスーパー海物語IN 沖縄5 SBA
 
@@ -17,11 +19,14 @@ def specs() -> dict:
     imb = 1 - (1-q)**5 * (1-p)**95  # imarine bounus - 10R
     odd = 1 - (1-q)**5 * (1-p)**45  # 6R
     even = 1 - (1-q)**5 * (1-p)**20  # 4R
-    continuing = np.dot((imb, odd, even), ratio)  # 0.6061
+    # continuing = np.dot((imb, odd, even), ratio)  # 0.6061
+    # print(continuing)
+    continuing = sum(a * b for a, b in zip((imb, odd, even), ratio))
     expected_loop = 1 / (1 - continuing)  # 2.5389
 
     # 期待ラウンド、払い出し、TY
-    expected_rounds = np.dot(round_, ratio)  # 5.5
+    # expected_rounds = np.dot(round_, ratio)  # 5.5
+    expected_rounds = sum(a * b for a, b in zip(round_, ratio))
     payout = prize['attacker'] * count - count  # 100
     ty = expected_loop * expected_rounds * payout # 1396.4
 
@@ -33,33 +38,27 @@ def specs() -> dict:
     p_ = 1 / ts
     border = 250 / (ty * p_)
 
-    d = {
-            'continuing': continuing,  # 継続率
-            'expected_loop': expected_loop,  # 期待連荘数
-            'expected_rounds': expected_rounds,  # 期待ラウンド数
-            'payout': payout,  # 1ラウンドの払い出し
-            'ty': ty,  # 特賞の（寄り玉）期待出玉
-            'ts': np.float64(ts),  # 実質の（特賞スタート）通常確率分母
-            'border': border  # ボーダー
-        }
+    m = Specs()
+    m.p = p
+    m.continuing = continuing
+    m.expected_loop = expected_loop
+    m.expected_rounds = expected_rounds
+    m.payout = payout
+    m.ty = ty
+    m.ts = ts
+    m.border = border
 
-    return d
+    return m.model_dump()
 
 
-def specs_table(**kwargs: np.float64) -> pd.DataFrame:
-    continuing = kwargs['continuing']
-    expected_loop = kwargs['expected_loop']
-    expected_rounds = kwargs['expected_rounds']
-    payout = kwargs['payout']
-    ty = kwargs['ty']
-    border = kwargs['border']
+def specs_table(**kw: float) -> pd.DataFrame:
     data = [
-            [round(continuing, 3)],
-            [round(expected_loop, 2)],
-            [round(expected_rounds, 1)],
-            [round(payout, 1)],
-            [round(ty, 1)],
-            [round(border, 2)],
+            [round(kw['continuing'], 3)],
+            [round(kw['expected_loop'], 2)],
+            [round(kw['expected_rounds'], 1)],
+            [round(kw['payout'], 1)],
+            [round(kw['ty'], 1)],
+            [round(kw['border'], 2)],
             ['ヘソ 3 電チュ 2 左右下 4 左右上 3'],
             ['11 attack x 10 count x 5 or 10 R']
         ]
@@ -68,26 +67,28 @@ def specs_table(**kwargs: np.float64) -> pd.DataFrame:
     return pd.DataFrame(data, index=index)
 
 
-def border_table(**kwargs: np.float64):
-    payouts = np.arange(93, 103)
+def border_table(**kw: float):
     starts = np.arange(17, 24)
-    expected_loop = kwargs['expected_loop']
-    expected_rounds = kwargs['expected_rounds']
-    ts = kwargs['ts']
-    tys = expected_loop * expected_rounds * payouts
+    payouts = np.arange(93, 103)
 
-    out = ts * 250 / starts
-    data = [np.round(ty/out, 3) for ty in tys]
+    expected_loop = kw['expected_loop']
+    expected_rounds = kw['expected_rounds']
+    arr_ty = expected_loop * expected_rounds * payouts
+
+    ts = kw['ts']
+    arr_out = ts * 250 / starts
+
+    data = [np.round(ty/arr_out, 3) for ty in arr_ty]
     df = pd.DataFrame(data, index=payouts, columns=starts)
 
     return df
 
 
 if __name__ == '__main__':
-    d = spesc()
+    d = specs()
     print(d)
-    df = specs_table(**d)
-    print(df)
-    df = border_table(**d)
-    print(df)
+    # df = specs_table(**d)
+    # print(df)
+    # df = border_table(**d)
+    # print(df)
 
