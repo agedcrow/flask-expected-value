@@ -10,7 +10,9 @@ import io
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
+import re
 
+from .models import Result
 from flask import current_app
 
 TOKEN_FILE = os.path.join(current_app.instance_path, 'token.json')
@@ -32,6 +34,8 @@ def connect_gspread(SPREADSHEET_KEY: str) -> list:
     worksheets = workbook.worksheets()
     
     return worksheets
+
+
 
 
 def arrays_from_sheet(machine_name: str):
@@ -63,8 +67,17 @@ def arrays_from_sheet(machine_name: str):
             payouts.append(float(p))
             games.append(int(g))
 
+    m = Result()
+    m.starts = starts
+    m.rounds = rounds
+    m.payouts = payouts
+    m.games = games
+
     return np.array(starts), np.array(rounds, dtype=int), np.array(payouts), np.array(games, dtype=int)
 
+
+def theoretical_value(starts, payouts, **kw):
+    ...
 
 def result(
         starts: np.ndarray,
@@ -127,6 +140,61 @@ def plot(games: np.ndarray, balance: np.ndarray):
     plot_img = base64.b64encode(png_output).decode('utf-8')
 
     return plot_img
+
+
+# new world
+
+def get_sskey(machine_name: str) -> str:
+    d = spreadsheet_keys()
+    spreadsheet_key = d[machine_name]
+    return spreadsheet_key
+
+def get_all_records(key: str, col_count=7) -> pd.DataFrame:
+    worksheets = connect_gspread(key)
+    ws = worksheets[0]
+    df = pd.DataFrame(ws.get_all_records())
+    # if not len(df['game-count']) == len(df):
+    #     pass
+    # if not col_count < df.columns.size:
+    #     pass
+    return df
+
+
+def df2dict(df: pd.DataFrame) -> dict:
+    pt = re.compile('[0-9]+-[0-9]+')
+    indexes = [idx for idx, no in enumerate(df['machine-no']) if pt.fullmatch(no)]
+    bottom_rows = [idx - 2 for idx in indexes[1:]]
+    row_count = len(df['game-count'])
+    bottom_rows.append(row_count - 1)
+    d = {}
+    for i, (idx, btm) in enumerate(zip(indexes, bottom_rows)):
+        machine_no = df['machine-no'][idx]
+        sr = df['starts'][idx:btm]
+        sr_droped = sr[sr != '']
+        values = sr_droped.tolist()
+        # 何かエラー処理
+        if not machine_no in d.keys():
+            d[machine_no] = values
+        else:
+            d[machine_no] += values
+    # print(d)
+    return d
+        
+
+def stat_for_starts(d: dict):
+    l = []
+    for key in d.keys():
+        val = d[key]
+        l.append({
+            'machine_no': key, 
+            'count': len(val), 
+            'mean': round(sum(val) / (len(val) if len(val) else 1), 1), 
+            's': ' '.join([str(x) for x in val])
+        })
+
+    sorted_l = sorted(l, key=lambda x: x['mean'], reverse=True)
+    # print(sorted_l)
+    return sorted_l
 
 
 if __name__ == "__main__":

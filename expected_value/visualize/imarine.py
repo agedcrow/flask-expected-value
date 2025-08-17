@@ -48,17 +48,17 @@ def specs() -> dict:
     m.ts = ts
     m.border = border
 
-    return m.model_dump()
+    return m
 
 
-def specs_table(**kw: float) -> pd.DataFrame:
+def specs_table(m: Specs) -> pd.DataFrame:
     data = [
-            [round(kw['continuing'], 3)],
-            [round(kw['expected_loop'], 2)],
-            [round(kw['expected_rounds'], 1)],
-            [round(kw['payout'], 1)],
-            [round(kw['ty'], 1)],
-            [round(kw['border'], 2)],
+            [round(m.continuing, 3)],
+            [round(m.expected_loop, 2)],
+            [round(m.expected_rounds, 1)],
+            [round(m.payout, 1)],
+            [round(m.ty, 1)],
+            [round(m.border, 2)],
             ['ヘソ 3 電チュ 2 左右下 4 左右上 3'],
             ['11 attack x 10 count x 5 or 10 R']
         ]
@@ -67,15 +67,15 @@ def specs_table(**kw: float) -> pd.DataFrame:
     return pd.DataFrame(data, index=index)
 
 
-def border_table(**kw: float):
+def border_table(m: Specs):
     starts = np.arange(17, 24)
     payouts = np.arange(93, 103)
 
-    expected_loop = kw['expected_loop']
-    expected_rounds = kw['expected_rounds']
+    expected_loop = m.expected_loop
+    expected_rounds = m.expected_rounds
     arr_ty = expected_loop * expected_rounds * payouts
 
-    ts = kw['ts']
+    ts = m.ts
     arr_out = ts * 250 / starts
 
     data = [np.round(ty/arr_out, 3) for ty in arr_ty]

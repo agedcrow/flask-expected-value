@@ -2,7 +2,7 @@
 {% block content %}
 
   <div class="p-4 text-center">
-    <h2 class="fs-5 mt-2 mb-4 text-secondary">{{ title }}</h2>
+    <h2 class="fs-5 mt-2 mb-4">{{ title }}</h2>
 
     <p>Specs</p>
     <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_specs | safe }}</div>
@@ -16,6 +16,15 @@
     <div class="mb-4">
       <img src="data:image/png;base64,{{ plot_img }}" alt="Image", width="420"/>
     </div>
+
+    <p>Machine stat</p>
+    {% for d in machine_stats %}
+    <div class="d-flex align-items-center justify-content-center">
+      <div class="me-2">{{ d['machine_no'] }}</div>
+      <div class="me-2">{{ d['count'] }}</div>
+      <div>{{ d['mean'] }}</div>
+    </div>
+    {% endfor %}
 
   </div>
 
