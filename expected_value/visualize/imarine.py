@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from .models import Specs
 
 
 # PAスーパー海物語IN 沖縄5 SBA
@@ -38,27 +37,27 @@ def specs() -> dict:
     p_ = 1 / ts
     border = 250 / (ty * p_)
 
-    m = Specs()
-    m.p = p
-    m.continuing = continuing
-    m.expected_loop = expected_loop
-    m.expected_rounds = expected_rounds
-    m.payout = payout
-    m.ty = ty
-    m.ts = ts
-    m.border = border
+    d = {}
+    d['p'] = p
+    d['continuing'] = continuing
+    d['expected_loop'] = expected_loop
+    d['expected_rounds'] = expected_rounds
+    d['payout'] = payout
+    d['ty'] = ty
+    d['ts'] = ts
+    d['border'] = border
 
-    return m
+    return d
 
 
-def specs_table(m: Specs) -> pd.DataFrame:
+def specs_table(**d) -> pd.DataFrame:
     data = [
-            [round(m.continuing, 3)],
-            [round(m.expected_loop, 2)],
-            [round(m.expected_rounds, 1)],
-            [round(m.payout, 1)],
-            [round(m.ty, 1)],
-            [round(m.border, 2)],
+            [round(d['continuing'], 3)],
+            [round(d['expected_loop'], 2)],
+            [round(d['expected_rounds'], 1)],
+            [round(d['payout'], 1)],
+            [round(d['ty'], 1)],
+            [round(d['border'], 2)],
             ['ヘソ 3 電チュ 2 左右下 4 左右上 3'],
             ['11 attack x 10 count x 5 or 10 R']
         ]
@@ -67,15 +66,15 @@ def specs_table(m: Specs) -> pd.DataFrame:
     return pd.DataFrame(data, index=index)
 
 
-def border_table(m: Specs):
+def border_table(**d):
     starts = np.arange(17, 24)
     payouts = np.arange(93, 103)
 
-    expected_loop = m.expected_loop
-    expected_rounds = m.expected_rounds
+    expected_loop = d['expected_loop']
+    expected_rounds = d['expected_rounds']
     arr_ty = expected_loop * expected_rounds * payouts
 
-    ts = m.ts
+    ts = d['ts']
     arr_out = ts * 250 / starts
 
     data = [np.round(ty/arr_out, 3) for ty in arr_ty]

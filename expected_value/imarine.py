@@ -13,31 +13,32 @@ bp = Blueprint('imarine', __name__, url_prefix='/imarine')
 def imarine():
 
     from .visualize.imarine import specs, specs_table, border_table
-    from .visualize.gspreadsheet import arrays_from_sheet, result, plot_data, plot
-
-    from .visualize.gspreadsheet import get_sskey, get_all_records, df2dict, stat_for_starts
+    from .visualize.spreadsheet import get_sskey, get_all_records, cutout, theoretical_values, actual_values, plot, machine_table
 
     title = 'PAスーパー海物語IN 沖縄5 SBA'
-    m = specs()
-    tbl_specs = specs_table(m)
-    tbl_border = border_table(m)
+    d = specs()
+    tbl_specs = specs_table(**d)
+    tbl_border = border_table(**d)
 
-    KEY = 'imarine'
-    starts, rounds, payouts, games = arrays_from_sheet(KEY)
-    tbl_result = result(starts, rounds, payouts, games, **m.model_dump())
-    data = plot_data(starts, rounds, payouts, games)
-    plot_img = plot(*data)
-
-    sskey = get_sskey(KEY)
-    df = get_all_records(sskey)
-    d = df2dict(df)
-    machine_stats = stat_for_starts(d)
+    machine_name = 'imarine'
+    spreadsheet_key = get_sskey(machine_name)
+    df = get_all_records(spreadsheet_key)
     
+    args = cutout(df)
+    keys = 'ts', 'expected_loop', 'expected_rounds'
+    kwargs = {k: d[k] for k in keys}
+
+    tbl_theoretical = theoretical_values(*args, **kwargs)
+    tbl_actual = actual_values(*args)
+    plot_img = plot(*args)
+    tbl_machine = machine_table(df, **kwargs)
+
     return render_template('page_imarine.html', 
                                 title = title,
                                 tbl_specs = tbl_specs.to_html(classes='tbl-specs'),
                                 tbl_border = tbl_border.to_html(classes='tbl-border'),
-                                tbl_result = tbl_result.to_html(classes='tbl-result', index=False),
+                                tbl_result = tbl_theoretical.to_html(classes='tbl-base', index=False),
+                                tbl_actual = tbl_actual.to_html(classes='tbl-base', index=False),
                                 plot_img = plot_img,
-                                machine_stats = machine_stats
+                                tbl_machine = tbl_machine.to_html(classes='tbl-base', index=False)
                             )

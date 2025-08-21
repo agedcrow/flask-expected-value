@@ -13,7 +13,7 @@ bp = Blueprint('agnes4', __name__, url_prefix='/agnes4')
 def agnes4():
 
     from .visualize.agnes4 import specs, specs_table, border_tables
-    from .visualize.gspreadsheet import arrays_from_sheet, result, plot_data, plot
+    from .visualize.spreadsheet import arrays_from_sheet, result, plot_data, plot
 
     title = 'PA大海物語4スペシャル RBA'
     kw = specs()

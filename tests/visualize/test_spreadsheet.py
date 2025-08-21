@@ -3,19 +3,19 @@ import pytest
 
 
 @pytest.fixture
-def gss(app):
+def ss(app):
     with app.app_context():
-        from expected_value.visualize import gspreadsheet
-        return gspreadsheet
+        from expected_value.visualize import spreadsheet
+        return spreadsheet
 
 KEY = 'test_seastory'
 
-def test_spreadsheet_keys(gss):
+def test_spreadsheet_keys(ss):
     d = gss.spreadsheet_keys()
     assert KEY in d.keys()
 
 
-def test_connect_gspread(gss):
+def test_connect_gspread(ss):
     expected = [['machine-no']]
 
     d = gss.spreadsheet_keys()
@@ -26,7 +26,7 @@ def test_connect_gspread(gss):
     assert expected == ws.get('A1')
 
 
-def test_arrays_from_sheet(gss):
+def test_arrays_from_sheet(ss):
     starts, rounds, payouts, games = gss.arrays_from_sheet(KEY)
     assert 63 == np.floor(starts).sum()
     assert 25 == rounds.sum()

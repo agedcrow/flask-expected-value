@@ -7,24 +7,28 @@
     <p>Specs</p>
     <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_specs | safe }}</div>
 
-    <p>Rate table</p>
+    <p>Rate</p>
     <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border | safe }}</div>
     
-    <p>Result</p>
-    <div class="mb-2 mx-auto" style="width:fit-content;">{{ tbl_result | safe }}</div>
+    <p>Theoretical rate</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_result | safe }}</div>
     
+    <p>Actual rate</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_actual | safe }}</div>
+
     <div class="mb-4">
       <img src="data:image/png;base64,{{ plot_img }}" alt="Image", width="420"/>
     </div>
 
     <p>Machines</p>
-    {% for d in machine_stats %}
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_machine | safe }}</div>
+    {# {% for d in machine_stats %}
     <div class="d-flex align-items-center justify-content-center">
       <div class="me-2">{{ d['machine_no'] }}</div>
       <div class="me-2">{{ d['count'] }}</div>
       <div>{{ d['mean'] }}</div>
     </div>
-    {% endfor %}
+    {% endfor %} #}
 
   </div>
 
