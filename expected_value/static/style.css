@@ -75,7 +75,7 @@ table {
 }
 
 .tbl-border th:first-child {
-  border-right: 1px dashed var(--gray-secondary);
+  border-right: 1px solid var(--gray-secondary);
 }
 
 .tbl-border thead th:first-child {
