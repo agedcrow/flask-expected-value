@@ -107,6 +107,32 @@ table {
 	text-align: right;
 }
 
+/* table machines */
+
+.tbl-machines {
+  border: 1px solid var(--gray-secondary);
+}
+
+.tbl-machines th, .tbl-machines td {
+  padding: 5px;
+}
+
+.tbl-machines thead th {
+  width: 58px;
+	text-align: center;
+	border-bottom: 1px solid var(--gray-secondary);
+  background: var(--gray-light);
+}
+
+.tbl-machines td {
+	text-align: right;
+}
+
+.tbl-machines td:last-child {
+  width: 118px;
+  text-align: left;
+}
+
 
 
 

@@ -16,6 +16,9 @@ def create_app(test_config=None):
     from . import imarine
     app.register_blueprint(imarine.bp)
 
+    from . import imarin_
+    app.register_blueprint(imarin_.bp)
+
 
 
     # from . import agnes4

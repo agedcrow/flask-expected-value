@@ -4,8 +4,8 @@ __pycache__/
 .DS_Store
 
 instance/
+expected_value/visualize/secrets/
 
 .pytest_cache
 build/
 
-expected_value/visualize/gsp.py

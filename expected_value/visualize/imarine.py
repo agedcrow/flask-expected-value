@@ -42,7 +42,7 @@ def specs() -> dict:
     d['continuing'] = continuing
     d['expected_loop'] = expected_loop
     d['expected_rounds'] = expected_rounds
-    d['payout'] = payout
+    d['payout_as_written'] = payout
     d['ty'] = ty
     d['ts'] = ts
     d['border'] = border
@@ -55,13 +55,13 @@ def specs_table(**d) -> pd.DataFrame:
             [round(d['continuing'], 3)],
             [round(d['expected_loop'], 2)],
             [round(d['expected_rounds'], 1)],
-            [round(d['payout'], 1)],
+            [round(d['payout_as_written'], 1)],
             [round(d['ty'], 1)],
             [round(d['border'], 2)],
             ['ヘソ 3 電チュ 2 左右下 4 左右上 3'],
             ['11 attack x 10 count x 5 or 10 R']
         ]
-    index = ['継続率', '期待連荘', '期待R', '出玉/R', 'TY', 'ボーダー', '賞球', 'カウント']
+    index = ['継続率', '期待連荘', '期待R', '表記出玉', 'TY', 'ボーダー', '賞球', 'カウント']
 
     return pd.DataFrame(data, index=index)
 
