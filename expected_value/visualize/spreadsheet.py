@@ -14,8 +14,8 @@ import re
 import math
 
 
-TOKEN_FILE = os.path.join(os.path.dirname(__file__), r'secrets\token.json')
-SSKEY_FILE = os.path.join(os.path.dirname(__file__), r'secrets\sskey.json')
+TOKEN_FILE = os.path.join(os.path.dirname(__file__), 'secrets/token.json')
+SSKEY_FILE = os.path.join(os.path.dirname(__file__), 'secrets/sskey.json')
 
 
 def connect_gspread(SPREADSHEET_KEY: str) -> list:
@@ -335,21 +335,21 @@ def machine_table(df, **kwargs):
 
 
 if __name__ == "__main__":
-    
-    key = get_sskey('imarine')
-    ws = get_ws(key)
-    df = get_all_records(ws)
+    print(TOKEN_FILE, SSKEY_FILE)
+    # key = get_sskey('imarine')
+    # ws = get_ws(key)
+    # df = get_all_records(ws)
 
-    # x = machine_indexes(df)
-    # print(x)
-    # d = start_agg(df)
-    # print(d)
-    # d = payout_agg(df)
-    # print(d)
+    # # x = machine_indexes(df)
+    # # print(x)
+    # # d = start_agg(df)
+    # # print(d)
+    # # d = payout_agg(df)
+    # # print(d)
 
-    from expected_value.visualize import imarine
+    # from expected_value.visualize import imarine
 
-    spec = imarine.specs()
-    # print(spec)
-    df_ = machine_table(df, **spec)
-    print(df_)
+    # spec = imarine.specs()
+    # # print(spec)
+    # df_ = machine_table(df, **spec)
+    # print(df_)

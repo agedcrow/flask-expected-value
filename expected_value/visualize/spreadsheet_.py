@@ -14,8 +14,8 @@ import re
 import math
 
 
-TOKEN_FILE = os.path.join(os.path.dirname(__file__), r'secrets\token.json')
-SSKEY_FILE = os.path.join(os.path.dirname(__file__), r'secrets\sskey.json')
+TOKEN_FILE = os.path.join(os.path.dirname(__file__), 'secrets/token.json')
+SSKEY_FILE = os.path.join(os.path.dirname(__file__), 'secrets/sskey.json')
 
 
 def connect_gspread(SPREADSHEET_KEY: str) -> list:
