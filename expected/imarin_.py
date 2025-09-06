@@ -12,11 +12,11 @@ bp = Blueprint('imarin_', __name__, url_prefix='/imarin_')
 @login_required
 def imarine():
 
-    from .visualize.imarine import specs, specs_table, border_table
+    from .visualize.imarine import imarine_specs, specs_table, border_table
     from .visualize.spreadsheet_ import get_sskey, get_all_records, cutout, theoretical_values, actual_values, plot, machine_table
 
     title = 'PAスーパー海物語IN 沖縄5 - 202508'
-    d = specs()
+    d = imarine_specs()
     tbl_specs = specs_table(**d)
     tbl_border = border_table(**d)
 

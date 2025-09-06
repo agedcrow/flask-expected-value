@@ -4,22 +4,21 @@ import pandas as pd
 
 # PAスーパー海物語IN 沖縄5 SBA
 
-def specs() -> dict:
+def imarine_specs() -> dict:
     p = 1/99.9
     q = 1/9.9
     prize = {'heso': 3, 'dentu': 2, 'attacker': 11, 'ta_1': 3, 'ta_2': 4}
     count = 10
     round_ = 10, 5, 5
     ratio = 0.1, 0.57, 0.33  # ratio of probabilities
-    st = 5
-    jt = 95, 45, 20
+    st = 5  # noqa
+    jt = 95, 45, 20  # noqa
 
     # 期待継続率、連荘数
     imb = 1 - (1-q)**5 * (1-p)**95  # imarine bounus - 10R
     odd = 1 - (1-q)**5 * (1-p)**45  # 6R
     even = 1 - (1-q)**5 * (1-p)**20  # 4R
     # continuing = np.dot((imb, odd, even), ratio)  # 0.6061
-    # print(continuing)
     continuing = sum(a * b for a, b in zip((imb, odd, even), ratio))
     expected_loop = 1 / (1 - continuing)  # 2.5389
 
@@ -27,12 +26,12 @@ def specs() -> dict:
     # expected_rounds = np.dot(round_, ratio)  # 5.5
     expected_rounds = sum(a * b for a, b in zip(round_, ratio))
     payout = prize['attacker'] * count - count  # 100
-    ty = expected_loop * expected_rounds * payout # 1396.4
+    ty = expected_loop * expected_rounds * payout  # 1396.4
 
     # 実質TS
     x = 7 - 2  # 残保留7 - 欠損2
     ts = (1 - (1 - (1-p)**x)) * 1/p
-    
+
     # ボーダー
     p_ = 1 / ts
     border = 250 / (ty * p_)
@@ -84,10 +83,9 @@ def border_table(**d):
 
 
 if __name__ == '__main__':
-    d = specs()
+    d = imarine_specs()
     print(d)
     # df = specs_table(**d)
     # print(df)
     # df = border_table(**d)
     # print(df)
-

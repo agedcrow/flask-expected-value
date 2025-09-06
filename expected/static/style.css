@@ -128,12 +128,11 @@ table {
 	text-align: right;
 }
 
-.tbl-machines td:last-child {
-  width: 118px;
-  text-align: left;
+.tbl-machines td:first-child {
+  width: 100px;
 }
 
-
-
-
-
+.tbl-machines td:last-child {
+  width: 120px;
+  text-align: left;
+}

@@ -12,25 +12,23 @@ bp = Blueprint('imarine', __name__, url_prefix='/imarine')
 @login_required
 def imarine():
 
-    from .visualize.imarine import specs, specs_table, border_table
-    from .visualize.spreadsheet import get_sskey, get_ws, get_all_records, _aggregate, tables, plot, machine_table
+    from .visualize.imarine import imarine_specs, specs_table, border_table
+    from .visualize.spreadsheet import get_spreadsheet_data, work, tables, plot, machine_table
 
     title = 'PAスーパー海物語IN 沖縄5 202509 -'
 
-    spec = specs()
-    tbl_specs = specs_table(**spec)
-    tbl_border = border_table(**spec)
+    specs = imarine_specs()
+    tbl_specs = specs_table(**specs)
+    tbl_border = border_table(**specs)
 
     machine_name = 'imarine'
-    spreadsheet_key = get_sskey(machine_name)
-    worksheet = get_ws(spreadsheet_key)
-    df = get_all_records(worksheet)
+    df = get_spreadsheet_data(machine_name)
 
-    agg = _aggregate(df)
-    tbl_theoretical, tbl_actual = tables(*agg, **spec)
-    plot_img = plot(*agg)
+    t = work(df)
+    tbl_theoretical, tbl_actual = tables(*t, **specs)
+    plot_img = plot(*t)
 
-    tbl_machine = machine_table(df, **spec)
+    tbl_machine = machine_table(df, **specs)
 
     return render_template('page_imarine.html', 
                                 title = title,

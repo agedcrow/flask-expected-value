@@ -159,9 +159,9 @@ def get_indices(df: pd.DataFrame) -> tuple[list, list]:
 
     return machine_indices, end_of_indices
 
-def start_agg(df: pd.DataFrame) -> dict:
+def start_agg(df: pd.DataFrame) -> dict[str, list]:
     machine_indices, end_of_indices = get_indices(df)
-    d = {}
+    d: dict[str, list] = {}
     for idx, end in zip(machine_indices, end_of_indices):
         machine_no = df['machine-no'][idx]
         sr = df['start'][idx:end]
@@ -175,9 +175,9 @@ def start_agg(df: pd.DataFrame) -> dict:
     # print(d)
     return d
         
-def payout_agg(df: pd.DataFrame):
+def payout_agg(df: pd.DataFrame) -> dict:
     machine_indices, end_of_indices = get_indices(df)
-    d = {}
+    d: dict[str, list] = {}
     for idx, end in zip(machine_indices, end_of_indices):
         machine_no = df['machine-no'][idx]
         payout = df['payout'][end]

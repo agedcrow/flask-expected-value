@@ -1,5 +1,5 @@
 import pytest
-from expected_value import create_app
+from expected import create_app
 
 
 @pytest.fixture

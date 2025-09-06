@@ -12,14 +12,28 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
 import re
 import math
+from typing import Any
 
+
+''' google spreadsheet のデータを取得 '''
 
 TOKEN_FILE = os.path.join(os.path.dirname(__file__), 'secrets', 'token.json')
 SSKEY_FILE = os.path.join(os.path.dirname(__file__), 'secrets', 'sskey.json')
 
 
-def connect_gspread(SPREADSHEET_KEY: str) -> list:
+def get_spreadsheet_key(machine_name: str) -> str:
+    d = {}
+    with open(SSKEY_FILE, 'r') as f:
+        d = json.load(f)
+    try:
+        spreadsheet_key = d[machine_name]
+        return spreadsheet_key
+    except KeyError as e:
+        print(f'Key Error: {e}')
+        return ''
 
+
+def connect_gspread(SPREADSHEET_KEY: str) -> list:
     scope = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/drive']
     credentials = Credentials.from_service_account_file(TOKEN_FILE, scopes=scope)
     gc = gspread.authorize(credentials)
@@ -29,26 +43,7 @@ def connect_gspread(SPREADSHEET_KEY: str) -> list:
     return worksheets
 
 
-def get_sskey(machine_name: str) -> str:
-    d = {}
-    with open(SSKEY_FILE, 'r') as f:
-        d = json.load(f)
-    try:
-        spreadsheet_key = d[machine_name]
-        return spreadsheet_key
-    except KeyError as e:
-        print(f'get_sskey error: {e}')
-        return ''
-
-
-def get_ws(spreadsheet_key):
-    worksheets = connect_gspread(spreadsheet_key)
-    ws = worksheets[0]
-    
-    return ws
-
-
-def get_all_records(worksheet: object) -> pd.DataFrame:
+def ws2df(worksheet: Any) -> pd.DataFrame:
     columns =  ['machine-no','count','out','start','loop','round','payout','game']
     
     df = pd.DataFrame(worksheet.get_all_records())
@@ -58,26 +53,41 @@ def get_all_records(worksheet: object) -> pd.DataFrame:
     return df
 
 
-def get_rate(start, payout, **kwargs) -> float: 
-    """
-    Lorem ipsum
-    Args:
-      start: float
-      payout: float
-    Keyword Args:
-      key1: (int)
+def get_spreadsheet_data(machine_name: str) -> pd.DataFrame:
+    key = get_spreadsheet_key(machine_name)
+    worksheets = connect_gspread(key)
+    worksheet = worksheets[0]
+    df = ws2df(worksheet)
+    return df
 
+
+''' 機械割の計算 '''
+
+def get_rate(start, payout, **specs) -> float:
     """
-    expected_loop = kwargs['expected_loop']
-    expected_rounds = kwargs['expected_rounds']
-    ts = kwargs['ts']
+    Args:
+      start (float): 250玉の回転数
+      payout (float): 1R当りの払い出し
+    Keyword Args:
+      expected_loop (float): 期待連荘数
+      expected_rounds (float): 期待ラウンド数
+      ts (float): 実質の特賞スタート
+    Returns:
+      float: 機械割
+    """
+    expected_loop = specs['expected_loop']
+    expected_rounds = specs['expected_rounds']
+    ts = specs['ts']
 
     ty = expected_loop * expected_rounds * payout
     out = ts * 250 / start
     
     return ty / out
 
-def _start_aggregate(df: pd.DataFrame) -> tuple[float, float]:
+
+''' 表とグラフの作成 '''
+
+def start_of_work(df: pd.DataFrame) -> tuple[float, np.ndarray]:
     sr = df['out']
     sr_numeric = pd.to_numeric(sr, errors="coerce")
     out = sr_numeric.dropna().to_numpy()
@@ -86,18 +96,18 @@ def _start_aggregate(df: pd.DataFrame) -> tuple[float, float]:
     sr_numeric = pd.to_numeric(sr, errors="coerce")
     start = sr_numeric.dropna().to_numpy()
 
-    sr = df['game']
-    sr_numeric = pd.to_numeric(sr, errors="coerce")
-    games = sr_numeric.dropna().to_numpy()
-
     start_mean = float('nan')
     if out.size == start.size:
         count = start * (out / 250)
         start_mean = count.sum() / (out.sum() / 250)
 
+    sr = df['game']
+    sr_numeric = pd.to_numeric(sr, errors="coerce")
+    games = sr_numeric.dropna().to_numpy()
+
     return start_mean, games
 
-def _payout_aggregate(df: pd.DataFrame) -> tuple[float, float]:
+def payout_of_work(df: pd.DataFrame) -> tuple[float, np.ndarray]:
     sr = df['round']
     sr_numeric = pd.to_numeric(sr, errors="coerce")
     rounds = sr_numeric.dropna().astype(int).to_numpy()
@@ -114,16 +124,16 @@ def _payout_aggregate(df: pd.DataFrame) -> tuple[float, float]:
     return payout_mean, rounds
 
 
-def _aggregate(df: pd.DataFrame) -> tuple[float, float, np.ndarray, np.ndarray]:
-    start_mean, games = _start_aggregate(df)
-    payout_mean, rounds = _payout_aggregate(df)
+def work(df: pd.DataFrame) -> tuple[float, float, np.ndarray, np.ndarray]:
+    start_mean, games = start_of_work(df)
+    payout_mean, rounds = payout_of_work(df)
     
     return start_mean, payout_mean, games, rounds
 
 
-def theoretical_value(start_mean, payout_mean, games, **kwargs):
+def theoretical_table(start_mean, payout_mean, games, **specs):
 
-    rate = get_rate(start_mean, payout_mean, **kwargs)
+    rate = get_rate(start_mean, payout_mean, **specs)
     out = games.sum() * 250 / start_mean
     balance = out * (rate - 1)
 
@@ -141,7 +151,7 @@ def theoretical_value(start_mean, payout_mean, games, **kwargs):
     return df
 
 
-def actual_value(start_mean, payout_mean, games, rounds):
+def actual_table(start_mean, payout_mean, games, rounds):
 
     out = games.sum() * 250 / start_mean
     safe = rounds.sum() * payout_mean
@@ -162,10 +172,10 @@ def actual_value(start_mean, payout_mean, games, rounds):
 
 def tables(start_mean, payout_mean, games, rounds, **specs):
     # ag = _aggregate(df)
-    theoretical_table = theoretical_value(start_mean, payout_mean, games, **specs)
-    actual_talbe = actual_value(start_mean, payout_mean, games, rounds)
+    theoretical_df = theoretical_table(start_mean, payout_mean, games, **specs)
+    actual_df = actual_table(start_mean, payout_mean, games, rounds)
     
-    return theoretical_table, actual_talbe
+    return theoretical_df, actual_df
 
 # plot
 
@@ -198,9 +208,9 @@ def plot(start_mean, payout_mean, games, rounds):
     return plot_img
 
 
-# machine_table
+''' 機械番号別の情報 '''
 
-def cutout(df: pd.DataFrame):
+def split_into_series(df: pd.DataFrame) -> dict[str, pd.Series]:
     d = {
         'machine_no': df['machine-no'],
         'count': df['count'],
@@ -208,7 +218,7 @@ def cutout(df: pd.DataFrame):
         'start': df['start'],
         'round': df['round'],
         'payout': df['payout'],
-        'comment': df['comment']
+        'desc': df['description']
     }
     return d
 
@@ -231,11 +241,22 @@ def machine_indexes(**kwargs) -> list:
 
     return list(zip(indexes, bottoms))
 
-def start_agg(indexes, **kwargs) -> dict:
+def start_of_machine(indexes, **kwargs) -> dict[str, list]:
+    """
+    Args:
+      indexes (list): e.g. [(1, 4), (5, 9), (10, 18)]
+    Keyword Args:
+      machine_no (series): 台番号
+      out (series): 投入した玉数
+      start (series): 回転数
+    Returns:
+      dict: {'台番号': [総ゲーム数, アウト]}
+        startとoutからcount(ゲーム数)を逆算してから集計する
+    """
     sr_machine_no = kwargs['machine_no']
     sr_out = kwargs['out']
     sr_start = kwargs['start']
-    d = {}
+    d: dict[str, list] = {}
     for idx, btm in indexes:
         machine_no = sr_machine_no[idx]
         
@@ -259,7 +280,17 @@ def start_agg(indexes, **kwargs) -> dict:
     return d
 
 
-def payout_agg(indexes, **kwargs):
+def payout_of_machine(indexes, **kwargs):
+    """
+    Args:
+      indexes (list): e.g. [(1, 4), (5, 9), (10, 18)]
+    Keyword Args:
+      machine_no (series): 台番号
+      round (series): ラウンド数
+      payout (series): 1Rの払い出し
+    Returns:
+      dict: {'台番号': [総ラウンド数, セーフ（トータルの払い出し）]}
+    """
     sr_machine_no = kwargs['machine_no']
     sr_round = kwargs['round']
     sr_payout = kwargs['payout']
@@ -288,44 +319,43 @@ def payout_agg(indexes, **kwargs):
     return d
 
 
-def comment_agg(indexes, **kwargs):
+def desc_of_machine(indexes: list, **kwargs) -> dict:
     sr_machine_no = kwargs['machine_no']
-    sr_comment = kwargs['comment']
+    sr_desc = kwargs['desc']
     d = {}
     for idx, _ in indexes:
         machine_no = sr_machine_no[idx]
-        comment = sr_comment[idx]
-        if not comment == '':
-            d[machine_no] = comment
+        desc = sr_desc[idx]
+        d[machine_no] = desc if desc else ''
 
     return d
 
 
-def machine_table(df, **kwargs):
-    d = cutout(df)
-    idx = machine_indexes(**d)
-    start_d = start_agg(idx, **d)
-    payout_d = payout_agg(idx, **d)
-    comment_d = comment_agg(idx, **d)
+def machine_table(df, **specs):
+    kwargs = split_into_series(df)
+    indexes = machine_indexes(**kwargs)
+    start_d = start_of_machine(indexes, **kwargs)
+    payout_d = payout_of_machine(indexes, **kwargs)
+    desc_d = desc_of_machine(indexes, **kwargs)
     data = []
     for key, val in start_d.items():
         count, out = val
         start = count / (out / 250)
-        comment = comment_d[key]
+        desc = desc_d[key] if key in desc_d.keys() else ''
         d = {
-            'machine_no': key, 
+            'machine': key, 
             'games': count, 
             'start': round(start, 2),
             'payout': float('nan'),
             'rate': float('nan'),
-            'comment': comment
+            'desc': desc
         }
         if key in payout_d.keys():
             round_sum, payout_sum = payout_d[key]
             payout = payout_sum / round_sum
             d['payout'] = round(payout, 2)
             if not math.isnan(start) and not math.isnan(payout):
-                rate = get_rate(start, payout, **kwargs)
+                rate = get_rate(start, payout, **specs)
                 d['rate'] = round(rate, 2)
 
 
