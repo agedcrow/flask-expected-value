@@ -12,21 +12,21 @@ bp = Blueprint('imarin_', __name__, url_prefix='/imarin_')
 @login_required
 def imarine():
 
-    from .visualize.imarine import imarine_specs, specs_table, border_table
+    from .visualize.imarine import imarine_spec, spec_table, border_table
     from .visualize.spreadsheet_ import get_sskey, get_all_records, cutout, theoretical_values, actual_values, plot, machine_table
 
     title = 'PAスーパー海物語IN 沖縄5 - 202508'
-    d = imarine_specs()
-    tbl_specs = specs_table(**d)
-    tbl_border = border_table(**d)
+    m = imarine_spec()
+    tbl_specs = spec_table(m)
+    tbl_border = border_table(m)
 
     machine_name = 'imarin_'
     spreadsheet_key = get_sskey(machine_name)
     df = get_all_records(spreadsheet_key)
     
     args = cutout(df)
-    keys = 'ts', 'expected_loop', 'expected_rounds'
-    kwargs = {k: d[k] for k in keys}
+    # keys = 'ts', 'expected_loop', 'expected_rounds'
+    kwargs = m.model_dump()
 
     tbl_theoretical = theoretical_values(*args, **kwargs)
     tbl_actual = actual_values(*args)

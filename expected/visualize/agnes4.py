@@ -5,27 +5,25 @@ import base64
 import io
 import json
 import os
+from expected.visualize.models import Spec
+from typing import Any
 
 
 # PA大海物語4スペシャル RBA
 
 # 実質TS
-def actual_ts(games=299, utime_games=379):
-    p = 1/99.9
-    # 残保留 6 - 4
-    x = -2  # 欠損2
-    ts = (1 - (1 - (1-p)**x)) * 1/p
-    p_ = 1 / ts
-    # 遊タイム
-    p_hit_before_utime = 1 - (1-p_)**games
-    p_reach_to_utime = 1 - p_hit_before_utime
-    p_hit_in_utime = 1 - (1-p_)**utime_games
-    p_reach_and_hit_in_utime = p_reach_to_utime * p_hit_in_utime
-    ts_actual = (1-p_reach_and_hit_in_utime) * 1/p_
+def ts_utime(p: float, loss: float, utime_densup: int, games: float) -> float:
+    ts_ = (1 - (1 - (1-p)**loss)) * 1/p
+    p_ = 1 / ts_
+    hit_before_utime = 1 - (1-p_)**games
+    reach_to_utime = 1 - hit_before_utime
+    hit_in_utime = 1 - (1-p_)**utime_densup
+    p_reach_and_hit = reach_to_utime * hit_in_utime
+    ts = (1-p_reach_and_hit) * 1/p_
 
-    return ts_actual
+    return ts
 
-def specs():
+def agnes4_spec() -> Spec:
     p = 1/99.9
     q = 1/19.5
     prize = {'heso': 3, 'dentu': 2, 'attacker': 12, 'ta_1': 2, 'ta_2': 4}
@@ -34,70 +32,78 @@ def specs():
     ratio = 0.04, 0.6, 0.06, 0.3
     st = 10
     jt = 90, 40, 40, 15
+    utime_timer = 299
+    utime_densup = 379
 
     agnes = 1 - (1-q)**10 * (1-p)**90
     odd   = 1 - (1-q)**10 * (1-p)**40
     even1 = 1 - (1-q)**10 * (1-p)**40
     even2 = 1 - (1-q)**10 * (1-p)**15
-    continuing = np.dot((agnes, odd, even1, even2), ratio)  # 継続率 0.5773
-    expected_loop = 1 / (1 - continuing)  # 期待連荘数 2.3660
+    continuing = sum(a * b for a, b in zip((agnes, odd, even1, even2), ratio))
+    expected_loop = 1 / (1 - continuing)
 
-    expected_rounds = np.dot(round_, ratio)  # 期待ラウンド数 5.439
-    payout = prize['attacker'] * count - count  # 表記出玉 99
-    ty = expected_loop * expected_rounds * payout # 1274.25
+    expected_rounds = sum(a * b for a, b in zip(round_, ratio))
+    payout = prize['attacker'] * count - count
+    ty = expected_loop * expected_rounds * payout
 
-    # 実質TS
-    ts = actual_ts()
+    ds = map(lambda x: x+10+4, jt)  # 電サポ（ST + 時短 + 残保留）
+    start_game = sum(a * b for a, b in zip(ds, ratio))  # 48.5
+    loss = -2  # 欠損 4 - 6
+    games = utime_timer - start_game
+    ts = ts_utime(p=p, loss=loss, utime_densup=utime_densup, games=games)
     # ボーダー
-    actual_p = 1 / ts
-    border = 250 / (ty * actual_p)
+    p_ = 1 / ts
+    border = 250 / (ty * p_)
 
-    d = {
-            'continuing': continuing,  # 継続率
-            'expected_loop': expected_loop,  # 期待連荘数
-            'expected_rounds': expected_rounds,  # 期待ラウンド数
-            'payout': payout,  # 1ラウンドの払い出し
-            'ty': ty,  # 特賞の（寄り玉）期待出玉
-            'ts': np.float64(ts),  # 実質の（特賞スタート）通常確率分母
-            'border': border  # ボーダー
-        }
+    m = Spec()
+    m.p = p
+    m.continuing = continuing
+    m.expected_loop = expected_loop
+    m.expected_rounds = expected_rounds
+    m.payout = payout
+    m.ty = ty
+    m.ts = ts
+    m.border = border
+    m.loss = loss
+    m.utime_timer = utime_timer
+    m.utime_densup = utime_densup
 
-    return d
+    return m
 
-def specs_table(**kwargs):
-    continuing = kwargs['continuing']
-    expected_loop = kwargs['expected_loop']
-    expected_rounds = kwargs['expected_rounds']
-    payout = kwargs['payout']
-    ty = kwargs['ty']
-    border = kwargs['border']
+def spec_table(m: Spec) -> pd.DataFrame:
     data = [
-            [round(continuing, 3)],
-            [round(expected_loop, 2)],
-            [round(expected_rounds, 1)],
-            [round(payout, 1)],
-            [round(ty, 1)],
-            [round(border, 2)],
-        ['ヘソ 3 電チュ 2 左上・右上 2 他 4'],
-        ['12 attack x 9 count x 4 or 6 or 10R']
+            [round(m.continuing, 3)],
+            [round(m.expected_loop, 2)],
+            [round(m.expected_rounds, 1)],
+            [round(m.payout, 1)],
+            [round(m.ty, 1)],
+            [round(m.border, 2)],
+            ['ヘソ 3 電チュ 2 左上・右上 2 他 4'],
+            ['12 attack x 9 count x 4 or 6 or 10R']
     ]
-    index = ['継続率', '期待連荘', '期待R', '出玉/R', 'TY', 'ボーダー', '賞球', 'カウント']
+    index = ['継続率', '期待連荘', '期待R', '出玉/R', 'TY', 'ボーダー(48.5G)', '賞球', 'カウント']
     return pd.DataFrame(data, index=index)
 
 
-def border_tables(*args: int, **kwargs: np.float64) -> pd.DataFrame:
+def border_tables(m: Spec, *start_games: int) -> pd.DataFrame:
     payouts = np.array([95, 96, 97, 98, 99, 100, 101])
     starts = np.arange(15, 23)
-    expected_loop = kwargs['expected_loop']
-    expected_rounds = kwargs['expected_rounds']
-    ts = kwargs['ts']
+    expected_loop = m.expected_loop
+    expected_rounds = m.expected_rounds
+    # ts = m.ts
+
+    ts_list = []
+    for g in start_games:
+        games = m.utime_timer - g
+        ts = ts_utime(m.p, m.loss, m.utime_densup, games)
+        ts_list.append(ts)
 
     dfs = []
-    for ts in [actual_ts(games=(299-game)) for game in args]:
+    for ts in ts_list:
         out = ts * 250 / starts
-        tys = expected_loop * expected_rounds * payouts
+        ty = expected_loop * expected_rounds * payouts
         
-        data = [np.round(ty/out, 3) for ty in tys]
+        data = [np.round(t/out, 3) for t in ty]
         df = pd.DataFrame(data, index=payouts, columns=starts)
         dfs.append(df)
 
@@ -105,10 +111,12 @@ def border_tables(*args: int, **kwargs: np.float64) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    d = specs()
-    # print(d)
-    # df = specs_table(**d)
-    # print(df)
-    args = 0, 33, 53, 90, 120, 160, 190
-    dfs = border_tables(*args, **d)
-    print(dfs[-1])
+    # res = ts_utime(p=1/99.9, loss=-2, games=299-133, utime_games=379)
+    # print(res)
+    m = agnes4_spec()
+    # print(type(m))
+    df = spec_table(m)
+    print(df)
+    sg = 34, 54, 80, 110, 140, 170
+    # dfs = border_tables(m, *sg)
+    # print(dfs[-1])

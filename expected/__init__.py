@@ -19,10 +19,8 @@ def create_app(test_config=None):
     from . import imarin_
     app.register_blueprint(imarin_.bp)
 
-
-
-    # from . import agnes4
-    # app.register_blueprint(agnes4.bp)
+    from . import agnes4
+    app.register_blueprint(agnes4.bp)
 
     @app.route('/')
     @login_required

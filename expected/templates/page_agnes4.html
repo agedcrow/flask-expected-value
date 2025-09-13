@@ -4,8 +4,8 @@
   <div class="p-4 text-center">
     <h2 class="fs-5 mt-2 mb-4">{{ title }}</h2>
 
-    <p>Specs</p>
-    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_specs | safe }}</div>
+    <p>Spec</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_spec | safe }}</div>
 
     <p>Rate tables</p>
     {% for caption, tbl_border in tbl_borders %}
@@ -13,12 +13,18 @@
       <div class="mb-4 mx-auto" style="width:fit-content">{{ tbl_border | safe }}</div>
     {% endfor %}
 
-    <p>Result</p>
-    <div class="mb-2 mx-auto" style="width:fit-content;">{{ tbl_result | safe }}</div>
+    <p>Expected rate</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_expected | safe }}</div>
     
+    <p>Real rate</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_real | safe }}</div>
+
     <div class="mb-4">
       <img src="data:image/png;base64,{{ plot_img }}" alt="Image", width="420"/>
     </div>
+
+    <p>Machines</p>
+    <div class="mb-4 mx-auto" style="width:fit-content;">{{ tbl_machine | safe }}</div>
 
   </div>
 

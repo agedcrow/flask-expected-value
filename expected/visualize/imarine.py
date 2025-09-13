@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
+from .models import Spec
 
 
 # PAスーパー海物語IN 沖縄5 SBA
 
-def imarine_specs() -> dict:
+def imarine_spec():
     p = 1/99.9
     q = 1/9.9
     prize = {'heso': 3, 'dentu': 2, 'attacker': 11, 'ta_1': 3, 'ta_2': 4}
@@ -36,27 +37,28 @@ def imarine_specs() -> dict:
     p_ = 1 / ts
     border = 250 / (ty * p_)
 
-    d = {}
-    d['p'] = p
-    d['continuing'] = continuing
-    d['expected_loop'] = expected_loop
-    d['expected_rounds'] = expected_rounds
-    d['payout_as_written'] = payout
-    d['ty'] = ty
-    d['ts'] = ts
-    d['border'] = border
+    m = Spec()
+    m.p = p
+    m.continuing = continuing
+    m.expected_loop = expected_loop
+    m.expected_rounds = expected_rounds
+    m.payout = payout
+    m.ty = ty
+    m.ts = ts
+    m.border = border
+    # d = m.model_dump()
 
-    return d
+    return m
 
 
-def specs_table(**d) -> pd.DataFrame:
+def spec_table(m) -> pd.DataFrame:
     data = [
-            [round(d['continuing'], 3)],
-            [round(d['expected_loop'], 2)],
-            [round(d['expected_rounds'], 1)],
-            [round(d['payout_as_written'], 1)],
-            [round(d['ty'], 1)],
-            [round(d['border'], 2)],
+            [round(m.continuing, 3)],
+            [round(m.expected_loop, 2)],
+            [round(m.expected_rounds, 1)],
+            [round(m.payout, 1)],
+            [round(m.ty, 1)],
+            [round(m.border, 2)],
             ['ヘソ 3 電チュ 2 左右下 4 左右上 3'],
             ['11 attack x 10 count x 5 or 10 R']
         ]
@@ -65,27 +67,24 @@ def specs_table(**d) -> pd.DataFrame:
     return pd.DataFrame(data, index=index)
 
 
-def border_table(**d):
+def border_table(m):
     starts = np.arange(17, 24)
     payouts = np.arange(93, 103)
 
-    expected_loop = d['expected_loop']
-    expected_rounds = d['expected_rounds']
-    arr_ty = expected_loop * expected_rounds * payouts
+    expected_loop = m.expected_loop
+    expected_rounds = m.expected_rounds
+    ty = expected_loop * expected_rounds * payouts
 
-    ts = d['ts']
-    arr_out = ts * 250 / starts
+    ts = m.ts
+    out = ts * 250 / starts
 
-    data = [np.round(ty/arr_out, 3) for ty in arr_ty]
+    data = [np.round(t/out, 3) for t in ty]
     df = pd.DataFrame(data, index=payouts, columns=starts)
 
     return df
 
 
 if __name__ == '__main__':
-    d = imarine_specs()
-    print(d)
-    # df = specs_table(**d)
-    # print(df)
-    # df = border_table(**d)
-    # print(df)
+    m = imarine_specs()
+    print(m)
+
