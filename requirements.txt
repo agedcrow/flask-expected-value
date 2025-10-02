@@ -5,8 +5,10 @@ certifi==2025.8.3
 charset-normalizer==3.4.3
 click==8.2.1
 contourpy==1.3.3
+coverage==7.10.6
 cycler==0.12.1
--e git+https://github.com/agedcrow/flask-expected-value.git@c74244aa4a2c709d75bd2a5c087bd7e063de7727#egg=expected_value
+expected @ file:///Users/rainy7bar/Python/flask-expected-value
+flake8==7.3.0
 Flask==3.1.2
 Flask-WTF==1.2.2
 fonttools==4.59.2
@@ -15,21 +17,32 @@ google-auth-oauthlib==1.2.2
 gspread==6.2.1
 gunicorn==23.0.0
 idna==3.10
+iniconfig==2.1.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
 kiwisolver==1.4.9
 MarkupSafe==3.0.2
 matplotlib==3.10.6
+mccabe==0.7.0
+mypy==1.18.1
+mypy_extensions==1.1.0
 numpy==2.3.3
 oauthlib==3.3.1
 packaging==25.0
 pandas==2.3.2
+pathspec==0.12.1
 pillow==11.3.0
+pluggy==1.6.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
+pycodestyle==2.14.0
 pydantic==2.11.9
 pydantic_core==2.33.2
+pyflakes==3.4.0
+Pygments==2.19.2
 pyparsing==3.2.4
+pytest==8.4.2
+pytest-cov==7.0.0
 python-dateutil==2.9.0.post0
 pytz==2025.2
 requests==2.32.5
