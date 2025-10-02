@@ -48,9 +48,11 @@ def ws2df(worksheet: Any) -> pd.DataFrame:
     columns =  ['machine-no','count','out','start','loop','round','payout','game']
     
     df = pd.DataFrame(worksheet.get_all_records())
+    print(df.columns.tolist())
+    print(columns)
     if not df.columns.tolist()[:8] == columns:
         df = pd.DataFrame([['???'] + [float('nan')] * 7], columns=columns)
-
+    print(df)
     return df
 
 
@@ -263,22 +265,23 @@ def machine_indexes(m: Sheet) -> list:
 
 def start_of_machine(m: Sheet, m_idx: list) -> dict[str, list]:
     machine_no = m.machine_no
-    out = m.out
-    start = m.start
-    d: dict[str, list] = {}
+    out_nan = m.out
+    start_nan = m.start
+    # d: dict[str, list] = {}
+    d = {}
     for idx, btm in m_idx:
-        m_no = machine_no[idx]
-        
-        m_out = remove_nan(out[idx:btm])
-        m_start = remove_nan(start[idx:btm])
-        m_count = m_start * (m_out / 250)
+        n = machine_no[idx]
+        start = remove_nan(start_nan[idx:btm])
+        if start.size:
+            out = remove_nan(out_nan[idx:btm])
+            count = start * (out / 250)
 
-        val = [int(m_count.sum()), int(m_out.sum())]
-        if not m_no in d.keys():
-            d[m_no] = val
-        else:
-            d[m_no][0] += val[0]
-            d[m_no][1] += val[1]
+            val = [int(count.sum()), int(out.sum())]
+            if not n in d.keys():
+                d[n] = val
+            else:
+                d[n][0] += val[0]
+                d[n][1] += val[1]
 
     return d
 
@@ -328,6 +331,7 @@ def machine_table(m: Sheet, spec: Spec):
     data = []
     for key, val in start_d.items():
         count, out = val
+        print(val)
         start = count / (out / 250)
         desc = desc_d[key] if key in desc_d.keys() else ''
         d = {

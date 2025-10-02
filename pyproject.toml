@@ -19,6 +19,8 @@ dependencies = [
 [project.optional-dependencies]
 test = ['pytest', 'pytest-cov']
 dev = ['flake8', 'mypy']
+# zsh: pip install -e '.[test]'
+
 
 [tool.setuptools.package-dir]
 expected = 'expected'
