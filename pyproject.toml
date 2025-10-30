@@ -24,3 +24,6 @@ dev = ['flake8', 'mypy']
 
 [tool.setuptools.package-dir]
 expected = 'expected'
+
+# ModuleNotFoundError: No module named 'flask_wtf'
+# インストール後、flask run で外部ライブラリが読み込めない場合は、仮想環境を入り直す。
